@@ -11,8 +11,12 @@ import { researchSchema } from './lib/schemas.js'
 import { researchBrief } from './lib/briefs.js'
 
 // args: { task_id?, parent_task, objective, questions:[...], search_scope?:[...] }
-const a = args ?? {}
-if (!a.objective || !a.questions) throw new Error('research-verify: pass args={parent_task, objective, questions:[...]}')
+// Accept either an object or a JSON-encoded string (some callers stringify args).
+let a = args ?? {}
+if (typeof a === 'string') { try { a = JSON.parse(a) } catch { /* reported below */ } }
+if (!a || !a.objective || !a.questions) {
+  throw new Error(`research-verify: pass args={parent_task, objective, questions:[...]}. Received typeof args=${typeof args}.`)
+}
 const task_id = a.task_id ?? 'research-verify'
 
 phase('Research')

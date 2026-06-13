@@ -11,8 +11,12 @@ import { reviewerSchema } from './lib/schemas.js'
 import { reviewerBrief } from './lib/briefs.js'
 
 // args: { task_id?, parent_task, artifacts:[...], dimensions:[{key, rubric:[...]}] }
-const a = args ?? {}
-if (!a.artifacts || !a.dimensions) throw new Error('review-panel: pass args={parent_task, artifacts:[...], dimensions:[{key,rubric:[...]}]}')
+// Accept either an object or a JSON-encoded string (some callers stringify args).
+let a = args ?? {}
+if (typeof a === 'string') { try { a = JSON.parse(a) } catch { /* reported below */ } }
+if (!a || !a.artifacts || !a.dimensions) {
+  throw new Error(`review-panel: pass args={parent_task, artifacts:[...], dimensions:[{key,rubric:[...]}]}. Received typeof args=${typeof args}.`)
+}
 const task_id = a.task_id ?? 'review-panel'
 
 phase('Review')
