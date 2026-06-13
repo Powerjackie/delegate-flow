@@ -1,5 +1,10 @@
 # delegate-flow
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![runtime for](https://img.shields.io/badge/runtime%20for-delegate--kit-blue)](https://github.com/Powerjackie/delegate-kit)
+[![engine](https://img.shields.io/badge/engine-Claude%20Code%20Workflow-8A2BE2)](https://docs.claude.com/en/docs/claude-code)
+![status: v0.1](https://img.shields.io/badge/status-v0.1-orange)
+
 **A deterministic runtime for delegated subagent work.** delegate-flow takes the
 *protocol* that [delegate-kit](https://github.com/Powerjackie/delegate-kit) defines
 — self-contained briefs, file-ownership contracts, role output schemas — and runs
