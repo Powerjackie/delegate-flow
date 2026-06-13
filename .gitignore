@@ -1,0 +1,10 @@
+# Bundled/generated outputs are reproducible via `npm run build`.
+dist/
+node_modules/
+.DS_Store
+
+# Agent memory is local continuity, not shipped artifacts.
+.agent-memory/
+
+# E2E test sandbox (throwaway)
+.sandbox/

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delegate-flow/reviewer.schema.json",
+  "title": "reviewer output",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "short stable id, echoed from the brief"
+    },
+    "status": {
+      "enum": [
+        "done",
+        "blocked",
+        "partially_done"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "description": "one-paragraph plain-text summary"
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "followups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "blocked_on": {
+      "type": "string",
+      "description": "populated only when status=blocked, else \"\""
+    },
+    "recommendation": {
+      "enum": [
+        "approve",
+        "request_changes",
+        "block"
+      ]
+    },
+    "recommendation_reason": {
+      "type": "string"
+    },
+    "scorecard": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "artifact": {
+            "type": "string",
+            "description": "ref from brief"
+          },
+          "dimension": {
+            "type": "string",
+            "description": "from rubric"
+          },
+          "score": {
+            "enum": [
+              "pass",
+              "concern",
+              "fail"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "description": "path:line or hunk ref"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact",
+          "dimension",
+          "score",
+          "evidence",
+          "note"
+        ]
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "field_or_decision": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recommendation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field_or_decision",
+          "options",
+          "recommendation"
+        ]
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "task_id",
+    "status",
+    "summary",
+    "risks",
+    "followups",
+    "blocked_on",
+    "recommendation",
+    "recommendation_reason",
+    "scorecard"
+  ]
+}

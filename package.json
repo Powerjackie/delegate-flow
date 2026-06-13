@@ -1,0 +1,21 @@
+{
+  "name": "delegate-flow",
+  "version": "0.1.0",
+  "description": "A deterministic Workflow-engine runtime for delegate-kit subagent briefs.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "gen": "node tools/gen-schemas.mjs",
+    "bundle": "node tools/build-flows.mjs",
+    "build": "node tools/gen-schemas.mjs && node tools/build-flows.mjs",
+    "check": "bash tools/check.sh"
+  },
+  "files": [
+    "flows/",
+    "schemas/",
+    "briefs/",
+    "prose/",
+    "skills/",
+    "tools/"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "_run": {
+    "date": "2026-06-13",
+    "engine": "Claude Code Workflow tool",
+    "flow": "dist/fanout-execute.flow.js",
+    "run_id": "wf_4400a6d0-e5b",
+    "agent_count": 2,
+    "subagent_tokens": 45562,
+    "duration_ms": 55123,
+    "independent_verification": "node --test passed both suites (2 pass / 0 fail each); only the two owned src files changed (ownership gate held)."
+  },
+  "dispatched": 2,
+  "returned": 2,
+  "changed_files": [
+    { "path": ".sandbox/e2e/src/auth/login.js", "change": "Guard against missing payload/user: return {status:400} instead of throwing; valid path still returns {status:200,id}", "by": "e2e-auth-null-guard" },
+    { "path": ".sandbox/e2e/src/billing/charge.js", "change": "Wrapped stripe.charge in try/catch; retry exactly once on err.code === 'ECONNRESET', rethrow all other errors", "by": "e2e-billing-retry" }
+  ],
+  "failing": [],
+  "unmet": [],
+  "blocked": [],
+  "followups": [],
+  "acceptance_summary": {
+    "e2e-auth-null-guard": "3/3 criteria met — login({})→400, valid→200, validation command passes",
+    "e2e-billing-retry": "3/3 criteria met — one retry on ECONNRESET, no retry on card_error, validation command passes"
+  }
+}

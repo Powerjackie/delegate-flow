@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delegate-flow/executor.schema.json",
+  "title": "executor output",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "short stable id, echoed from the brief"
+    },
+    "status": {
+      "enum": [
+        "done",
+        "blocked",
+        "partially_done"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "description": "one-paragraph plain-text summary"
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "followups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "blocked_on": {
+      "type": "string",
+      "description": "populated only when status=blocked, else \"\""
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "change": {
+            "type": "string",
+            "description": "one-line description of what changed"
+          }
+        },
+        "required": [
+          "path",
+          "change"
+        ]
+      }
+    },
+    "tests_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "not_run"
+            ]
+          },
+          "log_excerpt": {
+            "type": "string",
+            "description": "last ~10 lines if fail, else \"\""
+          }
+        },
+        "required": [
+          "command",
+          "result",
+          "log_excerpt"
+        ]
+      }
+    },
+    "acceptance_check": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "criterion": {
+            "type": "string",
+            "description": "verbatim from brief"
+          },
+          "met": {
+            "enum": [
+              "yes",
+              "no",
+              "partial"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "description": "file:line or test name"
+          }
+        },
+        "required": [
+          "criterion",
+          "met",
+          "evidence"
+        ]
+      }
+    }
+  },
+  "required": [
+    "task_id",
+    "status",
+    "summary",
+    "risks",
+    "followups",
+    "blocked_on",
+    "changed_files",
+    "tests_run",
+    "acceptance_check"
+  ]
+}

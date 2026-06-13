@@ -1,0 +1,35 @@
+[
+  {
+    "task_id": "auth-null-guard-20260613-1",
+    "parent_task": "Harden login against null user before the billing release",
+    "objective": "Return 400 instead of crashing when the login payload has no user field",
+    "problem_statement": "POST /login with {} throws TypeError at login.ts where user.id is read; should be a 400.",
+    "acceptance_criteria": [
+      "POST /login with an empty body returns HTTP 400",
+      "Existing valid-login tests still pass"
+    ],
+    "file_ownership": {
+      "exclusive_write": ["src/auth/login.ts"],
+      "read_only_allowed": ["src/auth/**", "tests/auth/**"],
+      "forbidden": ["src/billing/**", "VERSION", "migrations/**", ".env", "secrets/**"]
+    },
+    "validation_commands": ["npm test -- tests/auth"]
+  },
+  {
+    "task_id": "billing-retry-20260613-2",
+    "parent_task": "Harden login against null user before the billing release",
+    "objective": "Add a single bounded retry to the Stripe charge call on network error",
+    "problem_statement": "chargeCustomer() fails permanently on transient ECONNRESET; one retry with backoff is enough.",
+    "acceptance_criteria": [
+      "A transient network error triggers exactly one retry",
+      "A non-network error is not retried",
+      "Existing billing tests still pass"
+    ],
+    "file_ownership": {
+      "exclusive_write": ["src/billing/charge.ts"],
+      "read_only_allowed": ["src/billing/**", "tests/billing/**"],
+      "forbidden": ["src/auth/**", "VERSION", "migrations/**", ".env", "secrets/**"]
+    },
+    "validation_commands": ["npm test -- tests/billing"]
+  }
+]

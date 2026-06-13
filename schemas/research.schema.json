@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delegate-flow/research.schema.json",
+  "title": "research output",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "short stable id, echoed from the brief"
+    },
+    "status": {
+      "enum": [
+        "done",
+        "blocked",
+        "partially_done"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "description": "one-paragraph plain-text summary"
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "followups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "blocked_on": {
+      "type": "string",
+      "description": "populated only when status=blocked, else \"\""
+    },
+    "key_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "claim": {
+            "type": "string",
+            "description": "one-line finding"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "path:line-range refs"
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        },
+        "required": [
+          "claim",
+          "evidence",
+          "confidence"
+        ]
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "task_id",
+    "status",
+    "summary",
+    "risks",
+    "followups",
+    "blocked_on",
+    "key_findings"
+  ]
+}
