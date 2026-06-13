@@ -1,5 +1,6 @@
 # delegate-flow
 
+[![check](https://github.com/Powerjackie/delegate-flow/actions/workflows/check.yml/badge.svg)](https://github.com/Powerjackie/delegate-flow/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![runtime for](https://img.shields.io/badge/runtime%20for-delegate--kit-blue)](https://github.com/Powerjackie/delegate-kit)
 [![engine](https://img.shields.io/badge/engine-Claude%20Code%20Workflow-8A2BE2)](https://docs.claude.com/en/docs/claude-code)
