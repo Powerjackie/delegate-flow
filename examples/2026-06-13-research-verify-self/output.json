@@ -1,0 +1,24 @@
+{
+  "_run": {
+    "date": "2026-06-13",
+    "flow": "dist/research-verify.flow.js",
+    "run_id": "wf_84edf339-c5b",
+    "agent_count": 8,
+    "subagent_tokens": 193390,
+    "duration_ms": 80329,
+    "note": "1 researcher + one independent skeptic per finding. 6 confirmed, 1 refuted — the verify pass demoted a finding the researcher had asserted."
+  },
+  "confirmed": [
+    "fanout-execute calls assertDisjoint() (flows/lib/ownership.js) in its Gate phase before any dispatch; overlapping exclusive_write sets throw. [fanout-execute.flow.js:29-32, ownership.js:65-76]",
+    "flows/lib/schemas.js is the single source of truth; flows import its objects for runtime agent({schema}) validation. [schemas.js:1-15,140-145]",
+    "schemas/*.json are generated from schemas.js by tools/gen-schemas.mjs; tools/check.sh is the drift guard. [gen-schemas.mjs:13-24, check.sh]",
+    "research-verify fans out one skeptic per key_finding that re-opens cited files, defaults holds=false, and only holds=true findings land in `confirmed`. [research-verify.flow.js:34-83]"
+  ],
+  "refuted": [
+    {
+      "claim": "check.sh only checks that each generated schema EXISTS, not that it matches committed — so it misses byte-level drift.",
+      "reason": "Refuted by re-reading the file: check.sh runs `git diff --quiet -- schemas/` after regeneration and fails on any byte difference. The verifier cited the exact lines, demoting a claim that was stale relative to the current source.",
+      "demonstrates": "The verify pass gates output against current evidence rather than trusting the researcher's single read."
+    }
+  ]
+}

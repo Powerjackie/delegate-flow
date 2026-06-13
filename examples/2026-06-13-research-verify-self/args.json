@@ -1,0 +1,11 @@
+{
+  "task_id": "rv-self-design",
+  "parent_task": "Produce an evidence-backed FAQ of how delegate-flow enforces its guarantees",
+  "objective": "Explain, with file:line evidence, how delegate-flow makes delegate-kit's soft rules executable. The repository is at <repo> — read the source there.",
+  "questions": [
+    "How does the fanout-execute flow prevent two subagents from writing the same file? Name the exact function and source file.",
+    "What is the single source of truth for the role output schemas, and what keeps schemas/*.json in sync with it?",
+    "What does the research-verify flow do to each research finding before reporting it as confirmed?"
+  ],
+  "search_scope": ["<repo>/flows", "<repo>/tools"]
+}

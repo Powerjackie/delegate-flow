@@ -7,7 +7,10 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 
 command -v node >/dev/null 2>&1 || fail "node is required"
 
-echo "1/4 schemas/*.json are in sync with flows/lib/schemas.js (source of truth)..."
+echo "0/5 unit tests (ownership + brief builders)..."
+node --test tools/test-lib.mjs >/dev/null 2>&1 || fail "unit tests failed — run: node --test tools/test-lib.mjs"
+
+echo "1/5 schemas/*.json are in sync with flows/lib/schemas.js (source of truth)..."
 node tools/gen-schemas.mjs >/dev/null
 for f in schemas/*.json; do
   [ -f "$f" ] || fail "missing generated schema $f — run: node tools/gen-schemas.mjs"
@@ -20,7 +23,7 @@ if command -v git >/dev/null 2>&1 && git rev-parse --git-dir >/dev/null 2>&1; th
   fi
 fi
 
-echo "2/4 flows bundle cleanly..."
+echo "2/5 flows bundle cleanly..."
 node tools/build-flows.mjs >/dev/null
 for f in flows/*.flow.js; do
   base="$(basename "$f")"
@@ -28,12 +31,12 @@ for f in flows/*.flow.js; do
   head -n1 "dist/$base" | grep -q 'export const meta' || fail "dist/$base does not start with meta"
 done
 
-echo "3/4 every flow body references only inlined libs (no leftover imports)..."
+echo "3/5 every flow body references only inlined libs (no leftover imports)..."
 if grep -RnE "^\s*import\s.+from" dist/ >/dev/null 2>&1; then
   fail "dist/ still contains import statements — bundler bug"
 fi
 
-echo "4/4 every Executor brief path is repo-relative or absolute (no bare cd)..."
+echo "4/5 every Executor brief path is repo-relative or absolute (no bare cd)..."
 if grep -RnE "\bcd \." flows/ >/dev/null 2>&1; then
   fail "found 'cd .' in flows/ — briefs must not assume cd persists"
 fi

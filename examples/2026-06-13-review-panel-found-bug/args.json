@@ -1,0 +1,28 @@
+{
+  "task_id": "rp-ownership-lib",
+  "parent_task": "Pre-merge review of delegate-flow's parallel-safety and brief-builder libraries",
+  "artifacts": ["<repo>/flows/lib/ownership.js", "<repo>/flows/lib/briefs.js"],
+  "dimensions": [
+    {
+      "key": "correctness",
+      "rubric": [
+        "Does checkDisjoint correctly flag overlapping exclusive_write sets across subtree-vs-file, identical paths, and wildcard patterns?",
+        "Does executorBrief reject briefs missing file_ownership.exclusive_write or validation_commands?"
+      ]
+    },
+    {
+      "key": "robustness",
+      "rubric": [
+        "Are edge cases handled: empty arrays, trailing slashes, '**' vs '*' globs, and paths with no directory component?",
+        "Is the conservative bias (false 'conflict' cheap, false 'safe' corrupts a parallel write) actually upheld by the matcher?"
+      ]
+    },
+    {
+      "key": "docs",
+      "rubric": [
+        "Does each module header explain its role in the protocol-vs-runtime two-layer model?",
+        "Are the references to delegate-kit's rules accurate to what the code does?"
+      ]
+    }
+  ]
+}

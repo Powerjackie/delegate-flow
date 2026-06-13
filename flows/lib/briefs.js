@@ -61,6 +61,12 @@ export function executorBrief(b) {
   if (!own.exclusive_write || own.exclusive_write.length === 0) {
     throw new Error(`executorBrief(${b.task_id}): file_ownership.exclusive_write is required and non-empty`);
   }
+  // An Executor brief with no validation commands cannot satisfy its own injected
+  // acceptance criterion ("All listed validation commands pass") — reject it, for
+  // parity with the exclusive_write guard and the "unverifiable brief is broken" rule.
+  if (!b.validation_commands || b.validation_commands.length === 0) {
+    throw new Error(`executorBrief(${b.task_id}): validation_commands is required and non-empty`);
+  }
   return [
     `task_id: ${b.task_id}`,
     `parent_task: ${b.parent_task}`,

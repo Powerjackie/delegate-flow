@@ -1,0 +1,37 @@
+{
+  "_run": {
+    "date": "2026-06-13",
+    "flow": "dist/review-panel.flow.js",
+    "run_id": "wf_c42328b9-078",
+    "agent_count": 3,
+    "subagent_tokens": 88778,
+    "duration_ms": 114138,
+    "note": "One reviewer per dimension (correctness / robustness / docs). This run found a REAL block-level bug, since fixed."
+  },
+  "overall_recommendation": "block",
+  "by_dimension": [
+    { "dimension": "correctness", "recommendation": "request_changes" },
+    { "dimension": "robustness", "recommendation": "request_changes" },
+    { "dimension": "docs", "recommendation": "approve" }
+  ],
+  "fails": [
+    {
+      "artifact": "flows/lib/ownership.js",
+      "dimension": "conservative bias upheld (false 'safe' must never happen)",
+      "evidence": "Whole-tree tokens '', '.', '*', '**' and bare-directory paths were declared disjoint from specific paths: ['src'] vs ['src/foo.js'] => safe:true. A subagent owning the whole tree would be cleared to run in parallel with one owning a single file — corrupting a parallel write."
+    }
+  ],
+  "concerns_summary": [
+    "executorBrief accepted an empty validation_commands array (inconsistent with the non-empty exclusive_write guard).",
+    "ownership.js header described prefix/equality matching but the code also had an undocumented wildcard heuristic."
+  ],
+  "resolution": {
+    "commit": "see git log after this example",
+    "fixes": [
+      "Rewrote ownership.js matcher: prefix-based with a `whole` flag; '', '.', '*', '**' and leading-wildcard patterns now conflict with everything. The four false-safe cases now correctly report CONFLICT; genuinely disjoint sets stay safe.",
+      "executorBrief now rejects an empty validation_commands array.",
+      "Rewrote the ownership.js header to match the implemented rule.",
+      "Added tools/test-lib.mjs with regression tests for every false-safe case; wired into tools/check.sh (step 0/5) and CI."
+    ]
+  }
+}

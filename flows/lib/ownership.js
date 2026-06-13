@@ -7,38 +7,42 @@
 // model to have checked.
 //
 // Globs are compared structurally (no filesystem expansion — Workflow scripts
-// have no fs). We treat two patterns as conflicting when one is a prefix of the
-// other under directory semantics, or they are equal. This is deliberately
-// conservative: a false "conflict" only costs you serial execution; a false
-// "safe" would cost you a corrupted parallel write.
+// have no fs). Each pattern reduces to the literal directory PREFIX it owns; two
+// patterns conflict when their prefixes are equal, one is a directory-ancestor of
+// the other, or either could match anywhere (whole-tree / leading-wildcard
+// tokens). This is deliberately conservative: a false "conflict" only costs you
+// serial execution; a false "safe" would cost you a corrupted parallel write.
 
-// Normalize a path/glob for comparison: strip trailing slashes, collapse a
-// trailing `/**` or `/*` to the directory prefix marked as a subtree.
+// Reduce a path/glob to the concrete directory PREFIX it owns, plus a `whole`
+// flag for patterns that could match anywhere (and so conflict with everything).
+//
+// Conservative by construction: we keep only the literal prefix before the first
+// `*`. A pattern owns its prefix and everything beneath it. Whole-tree tokens
+// ('', '.', '*', '**') and any pattern whose prefix collapses to empty (e.g.
+// '*.js') are treated as `whole` — they could touch any file, so they conflict
+// with every other owner. Over-conservative (a false "conflict") only costs
+// serial execution; a false "safe" would corrupt a parallel write.
 function normalize(p) {
   let s = String(p).trim().replace(/\/+$/, '');
-  const subtree = /\/\*\*?$/.test(s);
-  s = s.replace(/\/\*\*?$/, '');
-  return { base: s, subtree };
+  if (s === '' || s === '.' || s === '*' || s === '**') return { prefix: '', whole: true };
+  const star = s.indexOf('*');
+  if (star === -1) return { prefix: s, whole: false };
+  const prefix = s.slice(0, star).replace(/\/+$/, '');
+  if (prefix === '') return { prefix: '', whole: true }; // leading wildcard: matches anywhere
+  return { prefix, whole: false };
 }
 
-// Does owning `a` conflict with owning `b`?
+// Does owning `a` conflict with owning `b`? True when their owned file sets may
+// intersect: either side matches anywhere, the prefixes are equal, or one prefix
+// is a directory-ancestor of the other.
 function patternsConflict(a, b) {
   const x = normalize(a);
   const y = normalize(b);
-  if (x.base === y.base) return true;
-  // subtree owner conflicts with anything beneath it
-  const xCoversY = y.base.startsWith(x.base + '/') && (x.subtree || x.base === '');
-  const yCoversX = x.base.startsWith(y.base + '/') && (y.subtree || y.base === '');
-  // a glob containing * inside (not just trailing) is treated as broad → conflict
-  // with any sibling under the same directory; keep it simple and conservative.
-  const xWild = x.base.includes('*');
-  const yWild = y.base.includes('*');
-  if (xWild || yWild) {
-    const xd = x.base.split('*')[0].replace(/\/[^/]*$/, '');
-    const yd = y.base.split('*')[0].replace(/\/[^/]*$/, '');
-    if (xd && (yd.startsWith(xd) || xd.startsWith(yd))) return true;
-  }
-  return xCoversY || yCoversX;
+  if (x.whole || y.whole) return true;
+  if (x.prefix === y.prefix) return true;
+  if (y.prefix.startsWith(x.prefix + '/')) return true;
+  if (x.prefix.startsWith(y.prefix + '/')) return true;
+  return false;
 }
 
 // Given an array of ownership blocks ({ id, exclusive_write: [glob...] }),
