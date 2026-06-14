@@ -4,16 +4,20 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![runtime for](https://img.shields.io/badge/runtime%20for-delegate--kit-blue)](https://github.com/Powerjackie/delegate-kit)
 [![engine](https://img.shields.io/badge/engine-Claude%20Code%20Workflow-8A2BE2)](https://docs.claude.com/en/docs/claude-code)
+[![portable](https://img.shields.io/badge/portable-OpenCode%20%C2%B7%20Codex%20%C2%B7%20any%20agent-2ea44f)](prose/RUNBOOK.md)
 ![status: v0.1](https://img.shields.io/badge/status-v0.1-orange)
 
-**A deterministic runtime for delegated subagent work.** delegate-flow takes the
-*protocol* that [delegate-kit](https://github.com/Powerjackie/delegate-kit) defines
-— self-contained briefs, file-ownership contracts, role output schemas — and runs
-it on a real orchestration **engine** instead of trusting the main agent to follow
-the convention by hand.
+**A deterministic, multi-tool runtime for delegated subagent work.** delegate-flow takes a
+tool-agnostic *protocol* — self-contained briefs, file-ownership contracts, role output
+schemas (defined by our companion project
+[delegate-kit](https://github.com/Powerjackie/delegate-kit)) — and runs it two ways: a
+deterministic **engine** on Claude Code, and a **portable** mode on any other agent tool.
+Either way the rules are enforced by structure, not by hoping the main agent follows a
+convention by hand.
 
-> delegate-kit answers *what to say to a subagent*.
-> delegate-flow answers *how to run a fleet of them, deterministically*.
+> The protocol answers *what to say to a subagent*.
+> delegate-flow answers *how to run a fleet of them — deterministically where it can,
+> portably everywhere else.*
 
 ## The two-layer model
 
@@ -24,29 +28,41 @@ the convention by hand.
 
 Same briefs, two ways to execute them:
 
-- **Engine mode (primary)** — Claude Code's `Workflow` tool runs a `flows/*.flow.js`
-  script. Control flow is JavaScript: the disjoint-ownership check *refuses* unsafe
-  parallelism, `agent({schema})` *enforces* the return shape at the tool layer, and
-  merges are code, not hand-parsing.
-- **Prose fallback (portable)** — the same briefs and schemas drive any tool
-  (OpenCode, Codex, a bare chat) via [`prose/RUNBOOK.md`](prose/RUNBOOK.md). You lose
-  determinism; you keep portability. This is delegate-kit's original mode, preserved.
+- **Engine mode** — Claude Code's `Workflow` tool runs a `flows/*.flow.js` script.
+  Control flow is JavaScript: the disjoint-ownership check *refuses* unsafe parallelism,
+  `agent({schema})` *enforces* the return shape at the tool layer, and merges are code,
+  not hand-parsing.
+- **Portable mode** — the same briefs and schemas drive any other tool (OpenCode, Codex,
+  a bare chat) via [`prose/RUNBOOK.md`](prose/RUNBOOK.md). It trades the engine's
+  determinism for universal portability; the protocol and contracts are identical.
+
+### Supported tools
+
+| Tool | Mode | What you get |
+|---|---|---|
+| **Claude Code** | engine (`Workflow`) | full determinism — ownership gating, schema-enforced returns, resume, budget |
+| **OpenCode · Codex · any agent / bare chat** | portable (`prose/RUNBOOK.md`) | the same briefs, schemas, and contracts, run by hand — portability over determinism |
+
+Only the *engine* is Claude-Code-specific; the protocol layer (`briefs/`, `schemas/`) and
+the contracts are tool-agnostic, so a brief written for one tool runs on the other.
 
 ## Why this is more than either half
 
-delegate-kit's own README states its rules are *soft* — "not yet validated against
-production workflows," enforced only by the model's compliance. Three of its core
-guarantees become *executable* here:
+The protocol's rules are *soft* by design — enforced only by the model's compliance. In
+engine mode, delegate-flow makes three of them *executable*:
 
-1. **Parallel safety.** delegate-kit: "run in parallel only if `exclusive_write`
-   sets are disjoint." delegate-flow: [`lib/ownership.js`](flows/lib/ownership.js)
-   computes disjointness and `fanout-execute` **throws** rather than dispatch an
-   overlapping batch.
-2. **Output shape.** delegate-kit: "every subagent MUST return this JSON." delegate-flow:
+1. **Parallel safety.** Protocol: "run in parallel only if `exclusive_write` sets are
+   disjoint." delegate-flow: [`lib/ownership.js`](flows/lib/ownership.js) computes
+   disjointness and `fanout-execute` **throws** rather than dispatch an overlapping batch.
+2. **Output shape.** Protocol: "every subagent MUST return this JSON." delegate-flow:
    the schema is passed to `agent({schema})`, so a wrong shape is *retried by the
    engine* — the main agent never parses a transcript.
-3. **Verification.** delegate-kit returns a research finding; `research-verify`
-   spawns an independent skeptic per finding and **drops the unverified ones**.
+3. **Verification.** Protocol: trust a returned research finding. delegate-flow:
+   `research-verify` spawns an independent skeptic per finding and **drops the unverified
+   ones**.
+
+(In portable mode the same three rules hold, enforced by the operator following
+[`prose/RUNBOOK.md`](prose/RUNBOOK.md) rather than by the engine.)
 
 ## Flows
 
@@ -74,6 +90,14 @@ Build the brief objects with the helpers in [`flows/lib/briefs.js`](flows/lib/br
 or fill the Markdown templates in [`briefs/`](briefs/). See
 [`examples/`](examples/) for a worked run.
 
+## Quickstart (portable mode — any other tool)
+
+No build step, no `Workflow` tool. Open [`prose/RUNBOOK.md`](prose/RUNBOOK.md), fill a
+template from [`briefs/`](briefs/), paste the matching contract from
+[`schemas/`](schemas/) into the brief, and dispatch the subagent in OpenCode, Codex, or a
+bare chat. You gate ownership and merge the returned JSON by hand, following the runbook —
+same protocol, no engine required.
+
 ## Layout
 
 ```
@@ -88,13 +112,14 @@ tools/        build-flows.mjs · gen-schemas.mjs · check.sh
 install/      per-platform installers
 ```
 
-## Relationship to delegate-kit
+## Two-layer toolchain
 
-delegate-flow **depends on delegate-kit as the protocol source** and does not vendor
-it. When delegate-kit's brief fields or envelope change, mirror them in
-`flows/lib/schemas.js` / `flows/lib/briefs.js` and run `tools/check.sh`. The split is
-deliberate: delegate-kit stays tool-agnostic and portable; delegate-flow is the
-Claude-Code-first engine that makes the protocol bite.
+delegate-kit and delegate-flow are companion projects that split one job across two layers.
+**delegate-kit** owns the tool-agnostic *protocol* — brief fields, `file_ownership`, role
+schemas. **delegate-flow** owns *execution* — a deterministic engine on Claude Code plus a
+portable mode for every other tool. They share one contract: when a brief field or the
+output envelope changes in delegate-kit, mirror it in `flows/lib/schemas.js` /
+`flows/lib/briefs.js` and run `tools/check.sh` to catch drift.
 
 ## License
 
